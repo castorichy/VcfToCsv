@@ -1,7 +1,51 @@
 import csv
 import re
 from time import sleep
-#re_name = input("Rename with?: ")
+import quopri
+import json
+
+def country_code() -> list:
+    with open('country_code.json', 'r') as p:
+        codes = p.read()
+        codes_list = json.loads(codes)
+        return codes_list 
+#print(country_code())
+
+def checkNumber(phone_num) -> str:
+    codes = country_code()
+
+    phone = ""
+    for n in phone_num:
+        if n == '-':
+            continue
+        else:
+            phone += n
+
+
+
+
+    if len(phone) >= 10 and len(phone) < 14:
+        c_code = phone[0:-9]
+        if c_code == '0':
+            return phone
+        elif c_code[0] == '+':
+            c_code = c_code[1:]
+            if int(c_code) in codes:
+                return phone
+            else:
+                return ''
+        else:
+            if int(c_code) in codes:
+                return '+' + phone
+            else:
+                return ''
+    else:
+      #  print(phone)
+        return ''
+
+def decodeString(name) -> str:
+    decoded_string = quopri.decodestring(name)
+    return decoded_string.decode('utf-8')
 
 def FName_rename(contact_name, re_name) -> str:
     #re_name = input("Rename with?: ")
@@ -27,9 +71,12 @@ def VcfReader():
 
     file = open(file_name, 'r', encoding="utf-8")
     Name = ""
+    Phone = ""
     for line in file:
-        name = re.findall('FN:(.*)', line)
+        name = re.findall('FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:(.*)', line)
         nm = ''.join(name)
+        nm = decodeString(nm)
+        #print(nm)
         if len(nm) == 0:
             continue
 
@@ -38,14 +85,16 @@ def VcfReader():
         #contact.append(name)
 
         for lin in file:
-            tel = re.findall('TEL;TYPE=CELL:?(?:PREF)?:(.*)', lin)
+            tel = re.findall('TEL;CELL:?(?:PREF)?:(.*)', lin)
             tel = ''.join(tel)
+            tel = checkNumber(tel)
 
-            if len(tel) == 0:
+            if tel == '':
                 continue
 
             tel = tel.strip()
-            tel = ''.join(e for e in tel if e.isalnum())
+            tel = ''.join(tel)#e for e in tel if e.isalnum())
+            #print(tel)
 
             phone = tel
             Phone = phone
