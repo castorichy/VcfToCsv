@@ -72,10 +72,18 @@ def VcfReader():
     file = open(file_name, 'r', encoding="utf-8")
     Name = ""
     Phone = ""
+    count = 0
     for line in file:
         name = re.findall('FN;CHARSET=UTF-8;ENCODING=QUOTED-PRINTABLE:(.*)', line)
+        if len(name) != None:
+            #name = ""
+            name = re.findall('FN:(.*)', line)
+        #print(name)
         nm = ''.join(name)
-        nm = decodeString(nm)
+        try:
+            nm = decodeString(nm)
+        except UnicodeDecodeError:
+            continue
         #print(nm)
         if len(nm) == 0:
             continue
@@ -102,6 +110,9 @@ def VcfReader():
             break
         writeToCsv(out_name, Name, Phone)
         #print(Name, phone)
+
+        count += 1
+        print(count)
 
 
 
